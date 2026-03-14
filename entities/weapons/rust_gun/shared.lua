@@ -302,7 +302,7 @@ function SWEP:FireBullet(aimcone)
 		bullet.Spread	= spread * 0.04
 		bullet.Tracer	= 3
 		bullet.Force	= 1
-		bullet.Damage	= self.Damage / self.Bullets
+		bullet.Damage	= damage / self.Bullets
 		bullet.Attacker = pl
 	
 		pl:FireBullets(bullet)
