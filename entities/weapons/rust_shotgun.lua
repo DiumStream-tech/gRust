@@ -70,6 +70,7 @@ function SWEP:InsertShell()
 
     timer.Simple(self.InsertDelay, function()
         if (!IsValid(self)) then return end
+        if (self:Clip1() >= self.ClipSize) then return end
 
         local ammoType = self.AmmoTypes[self:GetAmmoType()]
         self:SetClip(self:Clip1() + 1)
