@@ -110,10 +110,10 @@ function PROJECTILE:ExecuteFire()
 
                     dmg:ScaleDamage(1.5)
                 elseif (self:GetProjectileType() == ProjectileType.Incendiary) then
-                    dmg:ScaleDamage(1.1)
+                    dmg:ScaleDamage(1.05)
 
                     if (IsValid(tr.Entity) and tr.Entity:IsPlayer()) then
-                        tr.Entity:Ignite(2)
+                        tr.Entity:Ignite(1.5)
                     end
                 end
             end
