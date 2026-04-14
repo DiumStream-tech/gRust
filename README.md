@@ -27,13 +27,9 @@ You can browse the server list by finding "gRust" in the Garry's Mod gamemode li
 ### Playing on Official Servers
 
 The official gRust community is [gRust.co](https://grust.co), the servers are as follows:
-- EU Vanilla - `connect 51.89.178.178:27018`
-- EU Modded 2x - `connect 51.75.174.11:27015`
 - EU Modded 5x - `connect 51.75.174.11:27029`
 - EU Modded 10x - `connect 51.75.174.11:27044`
-- US Vanilla - `connect 147.135.124.15:27022`
 - US Modded 2x - `connect 147.135.124.17:27028`
-- US Modded 5x - `connect 147.135.124.10:27026`
   
 Simply enter one of the `connect` commands above into your console and you should start connecting.
   
