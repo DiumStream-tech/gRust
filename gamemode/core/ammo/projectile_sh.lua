@@ -24,6 +24,8 @@ function PROJECTILE:ExecuteFire()
     local vel = self:GetVelocity()
     if (self:GetProjectileType() == ProjectileType.HighVelocity) then
         vel = vel * 1.5
+    elseif (self:GetProjectileType() == ProjectileType.Incendiary) then
+        vel = vel * 0.8
     end
 
     local deltaTime = CurTime() - self.LastFireTime
@@ -108,7 +110,11 @@ function PROJECTILE:ExecuteFire()
 
                     dmg:ScaleDamage(1.5)
                 elseif (self:GetProjectileType() == ProjectileType.Incendiary) then
-                    -- TODO
+                    dmg:ScaleDamage(1.05)
+
+                    if (IsValid(tr.Entity) and tr.Entity:IsPlayer()) then
+                        tr.Entity:Ignite(1.5)
+                    end
                 end
             end
         end

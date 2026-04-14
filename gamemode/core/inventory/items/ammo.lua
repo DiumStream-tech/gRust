@@ -42,7 +42,7 @@ gRust.ItemRegister("incendiary_pistol_bullet")
 :SetStack(128)
 :SetIcon("materials/items/ammo/incendiary_pistol_ammo.png")
 :SetMaterial("Metal")
-:SetProjectileType(ProjectileType.Incendirary)
+:SetProjectileType(ProjectileType.Incendiary)
 :AddToCategory("Ammo")
 :SetRecipe(
     "metal_fragments", 10,
