@@ -174,7 +174,12 @@ function PANEL:PopulateSide()
     if (IsValid(self.SelectedNode) and !self.SelectedNode.Unlocked) then
         local Cost = UnlockContainer:Add("Panel")
         Cost:Dock(FILL)
-        local scrapIcon = gRust.GetItemRegister("scrap"):GetIcon()
+        local scrapRegister = gRust.GetItemRegister("scrap")
+        if (not scrapRegister) then
+            ErrorNoHalt("[gRust] Failed to get scrap item register\n")
+            return
+        end
+        local scrapIcon = scrapRegister:GetIcon()
         Cost.Paint = function(me, w, h)
             surface.SetDrawColor(255, 255, 255)
             surface.SetMaterial(scrapIcon)
@@ -190,6 +195,11 @@ function PANEL:SelectNode(node)
     local cost = node.props["cost"]
     local id = node.props["id"]
     local item = gRust.GetItemRegister(id)
+    
+    if (not item) then
+        ErrorNoHalt("[gRust] Failed to get item register for: " .. tostring(id) .. "\n")
+        return
+    end
 
     self.SelectedItem = item
     self.SelectedItemCost = cost

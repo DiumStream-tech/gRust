@@ -32,6 +32,11 @@ end
 
 util.AddNetworkString("gRust.SetAmmoType")
 net.Receive("gRust.SetAmmoType", function(len, pl)
+    if (not IsValid(pl)) then return end
     local index = net.ReadUInt(8)
+    if (type(index) ~= "number" or index < 0) then
+        ErrorNoHalt("[gRust] Invalid ammo index received: " .. tostring(index) .. "\n")
+        return
+    end
     pl:SetAmmoType(index)
 end)

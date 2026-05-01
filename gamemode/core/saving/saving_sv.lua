@@ -90,16 +90,18 @@ timer.Create("gRust.Save", SAVE_INTERVAL, 0, function()
         gRust.LastBackup = CurTime()
 
         local f = file.Read(SAVE_DIR .. "autosave.dat", "DATA")
-        local backupFile = SAVE_DIR .. "backups/autosave_" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".dat"
-        file.Write(backupFile, f)
+        if (f and f ~= "") then
+            local backupFile = SAVE_DIR .. "backups/autosave_" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".dat"
+            file.Write(backupFile, f)
 
-        local files = file.Find(SAVE_DIR .. "backups/*.dat", "DATA")
-        if (#files > MAX_BACKUPS) then
-            table.sort(files, function(a, b)
-                return a < b
-            end)
+            local files = file.Find(SAVE_DIR .. "backups/*.dat", "DATA")
+            if (files and #files > MAX_BACKUPS) then
+                table.sort(files, function(a, b)
+                    return a < b
+                end)
 
-            file.Delete(SAVE_DIR .. "backups/" .. files[1])
+                file.Delete(SAVE_DIR .. "backups/" .. files[1])
+            end
         end
     end
 end)

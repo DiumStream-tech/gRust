@@ -27,12 +27,30 @@ Both are required for the permission system and admin commands to function prope
 
 Use these commands in-game with the `!` prefix:
 
+### Admin Commands (require admin/superadmin)
 - `!grust help` - Display all available commands
-- `!multiplier get|gather|resources|recycler|loot <value>` - Manage multipliers
+- `!multiplier get` - View current multipliers
+- `!multiplier <type> <value>` - Set multiplier (gather, resources, recycler, loot, all)
+- `!mult <type> <value>` - Shortcut for multiplier command
 - `!giveitem <item_id> [amount]` - Give yourself items
-- `!save` / `!load` - Save/load config
-- `!wipe all|config` - Wipe data
-- `!perm get|set` - Manage permissions
+- `!give <item_id> [amount]` - Shortcut for giveitem
+- `!save` - Save current gamemode state
+- `!load` - Load saved gamemode state
+- `!wipe all` - Wipe all data except config, then restart
+- `!wipe config` - Wipe config only, then restart
+- `!perm get` - View current permissions
+- `!perm set <key> <level>` - Set permission level (public, user, moderator, admin, superadmin)
+
+### Permission System
+
+The gamemode uses a permission system that integrates with ULX:
+- **superadmin** - Full access to all commands
+- **admin** - Default access level for all commands
+- **moderator** - Reserved for future use
+- **user** - Limited access
+- **public** - No access
+
+Permissions can be configured with `!perm set <key> <level>`
 
 ## Repository
 

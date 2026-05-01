@@ -27,23 +27,36 @@ function gRust.CreateTeam(pl)
 
     local sid = sql.SQLStr(pl:SteamID64())
     gRust.LocalQuery(string.format("INSERT INTO grust_teams(ownerid) VALUES(%s)", sid))
-    gRust.LocalQuery("SELECT LAST_INSERT_ROWID()", function(data)
-        local id = tonumber(data[1]["LAST_INSERT_ROWID()"])
-        gRust.LocalQuery(string.format("INSERT INTO grust_teamplayers(uid, name, teamid, isleader) VALUES(%s, %s, %s, 1)", sid, sql.SQLStr(pl:Nick()), id))
-        pl.TeamID = id
+    
+    -- Small delay to ensure insert completes before reading
+    timer.Simple(0.01, function()
+        if (not IsValid(pl)) then return end
+        
+        gRust.LocalQuery("SELECT LAST_INSERT_ROWID()", function(data)
+            if (not IsValid(pl) or not data or #data == 0) then return end
+            
+            local id = tonumber(data[1]["LAST_INSERT_ROWID()"])
+            if (not id or id < 1) then
+                ErrorNoHalt("[gRust] Invalid team ID generated\n")
+                return
+            end
+            
+            gRust.LocalQuery(string.format("INSERT INTO grust_teamplayers(uid, name, teamid, isleader) VALUES(%s, %s, %s, 1)", sid, sql.SQLStr(pl:Nick()), id))
+            pl.TeamID = id
 
-        gRust.Teams[id] = {
-            OwnerID = pl:SteamID64(),
-            Members = {
-                {
-                    Name = pl:Nick(),
-                    SteamID64 = pl:SteamID64(),
-                    IsLeader = true
+            gRust.Teams[id] = {
+                OwnerID = pl:SteamID64(),
+                Members = {
+                    {
+                        Name = pl:Nick(),
+                        SteamID64 = pl:SteamID64(),
+                        IsLeader = true
+                    }
                 }
             }
-        }
-        
-        gRust.SyncTeam(pl)
+            
+            gRust.SyncTeam(pl)
+        end)
     end)
 end
 

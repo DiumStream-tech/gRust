@@ -13,8 +13,10 @@ end
 
 -- Check permission helper
 local function HasPermission(ply, permission)
+    if (not IsValid(ply)) then return false end
     if (not permission) then return true end
     if (not gRust.Permissions or not gRust.Permissions.HasPermission) then
+        -- Fallback if permissions system not ready
         return ply:IsSuperAdmin() or ply:IsAdmin()
     end
     return gRust.Permissions:HasPermission(ply, permission)
@@ -22,6 +24,7 @@ end
 
 -- Parse and execute chat commands
 hook.Add("PlayerSay", "gRust.ChatCommands", function(ply, text)
+    if (not IsValid(ply)) then return end
     if (string.sub(text, 1, 1) ~= "!") then return end
     
     local parts = string.Explode(" ", text)

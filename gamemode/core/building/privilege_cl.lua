@@ -44,7 +44,7 @@ hook.Add("gRust.Loaded", "gRust.BuildNotifications", function()
     privilege:SetTextColor(Color(133, 183, 43))
     privilege:SetIconPadding(8)
     privilege:SetCondition(function()
-        return LocalPlayer().BuildPrivilege
+        return LocalPlayer().BuildPrivilege and IsValid(LocalPlayer().BuildPrivilegeEnt)
     end)
 
     local decaying = gRust.CreateNotification()

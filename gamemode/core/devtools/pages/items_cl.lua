@@ -5,21 +5,7 @@ local OpenedTab = "Items"
 local CATEGORY_FONT = "gRust.22px"
 local CATEGORY_MARGIN = 5
 
-local hasPermission = false
-
-local function CheckPermission()
-    net.Start("gRust.CheckPermission")
-        net.WriteString("give")
-    net.SendToServer()
-end
-
-net.Receive("gRust.PermissionDenied", function()
-    hasPermission = net.ReadBool()
-end)
-
 function PANEL:Init()
-    timer.Simple(0.1, function() CheckPermission() end)
-    
     local CategoryContainer = self:Add("Panel")
     CategoryContainer:Dock(TOP)
     CategoryContainer:SetTall(40)
@@ -94,12 +80,10 @@ function PANEL:Paint(w, h)
 end
 
 local function SpawnItem(id, amount)
-    if (not hasPermission) then
-        LocalPlayer():ChatPrint("You do not have permission to spawn items")
-        return
-    end
-    
-    RunConsoleCommand("grust_giveitem", id, amount)
+    net.Start("gRust.RequestSpawnItem")
+        net.WriteString(id)
+        net.WriteUInt(amount, 16)
+    net.SendToServer()
 end
 
 local ITEM_PADDING = 8
@@ -112,7 +96,7 @@ function PANEL:FillItems(condition)
 
     for k, v in ipairs(gRust.GetItems()) do
         local register = gRust.GetItemRegister(v)
-        if (!condition(register)) then continue end
+        if (not register or not condition(register)) then continue end
 
         local Item = self.Container:Add("gRust.Button")
         Item:SetDefaultColor(Color(200, 200, 200))

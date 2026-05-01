@@ -106,6 +106,8 @@ end
 --
 
 function PLAYER:HasPrivilegeForEntity(ent)
+    if (!IsValid(self)) then return false end
+    if (!IsValid(ent)) then return false end
     if (self:IsBuildBlocked()) then return false end
 
     if (IsValid(ent.ToolCupboard)) then

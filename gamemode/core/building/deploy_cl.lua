@@ -12,7 +12,15 @@ end
 function gRust.StartDeploy(id)
     if (!LocalPlayer():Alive()) then return end
     local itemRegister = gRust.GetItemRegister(id)
+    if (not itemRegister) then
+        ErrorNoHalt("[gRust] Invalid item register for deploy: " .. tostring(id) .. "\n")
+        return
+    end
     local ent = scripted_ents.Get(itemRegister:GetEntity())
+    if (not ent or not ent.Deploy) then
+        ErrorNoHalt("[gRust] Invalid entity or deploy data for item: " .. tostring(id) .. "\n")
+        return
+    end
     local deployData = ent.Deploy
 
     if (IsValid(gRust.Deploy.Entity)) then

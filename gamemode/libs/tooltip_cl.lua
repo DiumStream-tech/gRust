@@ -3,6 +3,7 @@ local PANEL = FindMetaTable("Panel")
 local TooltipColor = Color(24, 102, 154)
 local TooltipFont = "gRust.38px"
 local TextColor = Color(108, 193, 253)
+
 function PANEL:SetTooltip(text)
     if (self.Tooltip) then
         self.Tooltip = text
@@ -18,7 +19,8 @@ function PANEL:SetTooltip(text)
     self.TooltipMatrix = Matrix()
     self.PaintOver = function(me, w, h)
         draw.Overlay(function()
-            if (vgui.GetHoveredPanel() == me and me.Tooltip and type(me.Tooltip) == "string" and string.len(me.Tooltip) > 0) then
+            local text = me.Tooltip
+            if (vgui.GetHoveredPanel() == me and text and type(text) == "string" and string.len(text) > 0) then
                 if (!me.TooltipHoverTime) then
                     me.TooltipHoverTime = CurTime() + 0.15
                 end
@@ -31,11 +33,10 @@ function PANEL:SetTooltip(text)
                 local clip = DisableClipping(true)
 
                 surface.SetFont(TooltipFont)
-                local tw, th = surface.GetTextSize(me.Tooltip)
+                local tw, th = surface.GetTextSize(text)
                 local x = (w * 0.5) - (tw * 0.5 + TooltipPaddingX)
                 local y
 
-                -- Check if we can fit the tooltip above the panel, otherwise put it below
                 if (sy - h * 0.5 > 0) then
                     y = -TooltipSpacing - th - TooltipPaddingY * 2
                 else
@@ -53,32 +54,27 @@ function PANEL:SetTooltip(text)
                 mx = mx + bw * 0.5
                 my = my + bh * 0.5
 
-                x, y = self:LocalToScreen(x, y)
+                local screenX, screenY = me:LocalToScreen(x, y)
 
                 local scale = Vector(1, 1, 1) * math.ease.OutBack(animProgress)
                 scale.z = 1
                 
+                me.TooltipMatrix:Identity()
                 me.TooltipMatrix:Translate(Vector(mx, my))
                 me.TooltipMatrix:SetScale(scale)
                 me.TooltipMatrix:Translate(Vector(-mx, -my))
+                
                 cam.PushModelMatrix(me.TooltipMatrix)
 
-                gRust.DrawPanelColored(x, y, bw, bh, TooltipColor)
+                gRust.DrawPanelColored(screenX, screenY, bw, bh, TooltipColor)
 
-                local lines = string.Explode("\n", me.Tooltip)
-
+                local lines = string.Explode("\n", text)
                 for i = 1, #lines do
-                    -- surface.SetTextColor(TextColor)
-                    -- surface.SetTextPos(x + TooltipPaddingX, y + TooltipPaddingY + (i - 1) * th * 0.5)
-                    -- surface.DrawText(lines[i])
-
-                    draw.SimpleText(lines[i], TooltipFont, x + bw * 0.5, y + TooltipPaddingY + (i - 1) * (th / #lines), TextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+                    draw.SimpleText(lines[i], TooltipFont, screenX + bw * 0.5, screenY + TooltipPaddingY + (i - 1) * (th / #lines), TextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
                 end
 
                 surface.SetAlphaMultiplier(1)
-
                 cam.PopModelMatrix()
-
                 DisableClipping(clip)
             else
                 me.TooltipHoverTime = nil

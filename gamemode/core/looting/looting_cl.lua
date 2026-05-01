@@ -21,12 +21,17 @@ end
 
 net.Receive("gRust.StartedLooting", function(len)
     local ent = net.ReadEntity()
+    
+    if (not IsValid(ent)) then
+        ErrorNoHalt("[gRust] Received invalid entity in StartedLooting\n")
+        return
+    end
 
     gRust.LootingEntity = ent
     ent:OnStartLooting(LocalPlayer())
 
     gRust.OpenInventory(ent:GetInventoryName(), function(...)
-        if (ent.CreateLootingPanel) then
+        if (IsValid(ent) and ent.CreateLootingPanel) then
             ent:CreateLootingPanel(...)
         end
     end)

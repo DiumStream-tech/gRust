@@ -74,7 +74,12 @@ function PANEL:Paint(w, h)
 end
 
 function PANEL:SetItem(id)
-    self.Item = gRust.GetItemRegister(id)
+    local register = gRust.GetItemRegister(id)
+    if (not register) then
+        ErrorNoHalt("[gRust] Failed to get item register for node: " .. tostring(id) .. "\n")
+        return
+    end
+    self.Item = register
 end
 
 vgui.Register("gRust.TechTree.Node", PANEL, "DButton")

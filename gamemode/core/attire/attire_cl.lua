@@ -2,6 +2,8 @@ net.Receive("gRust.Attire.Sync", function(len)
     local count = net.ReadUInt(7)
     for i = 1, count do
         local pl = net.ReadPlayer()
+        if (not IsValid(pl)) then continue end
+        
         local attireCount = net.ReadUInt(3)
         for i = 1, attireCount do
             local attireItem = net.ReadUInt(gRust.ItemIndexBits)
@@ -35,6 +37,8 @@ end)
 
 net.Receive("gRust.Attire.Remove", function(len)
     local pl = net.ReadPlayer()
+    if (not IsValid(pl)) then return end
+    
     local attireType = net.ReadUInt(4)
     
     if (!pl.AttireEntities) then return end

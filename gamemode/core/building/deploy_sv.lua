@@ -98,11 +98,11 @@ end)
 
 util.AddNetworkString("gRust.Rotate")
 net.Receive("gRust.Rotate", function(len, pl)
-    if (!pl:Alive()) then return end
+    if (!IsValid(pl) or !pl:Alive()) then return end
     if (pl:IsBuildBlocked()) then return end
     local ent = net.ReadEntity()
     if (!IsValid(ent)) then return end
-    if (!ent.CanRotate) then return end
+    if (!ent.Deploy or !ent.CanRotate) then return end
     if (ent:GetPos():DistToSqr(pl:GetPos()) > 10000) then return end
     
     local rotation = ent.Deploy:GetRotate()

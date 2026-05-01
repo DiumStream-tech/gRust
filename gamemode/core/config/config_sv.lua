@@ -63,7 +63,6 @@ function gRust.SetConfigValue(key, value)
     local keyName = parts[2]
 
     if (not fileName or not keyName) then
-        print("[gRust ERROR] Invalid config key: " .. key)
         return
     end
 
@@ -76,8 +75,6 @@ function gRust.SetConfigValue(key, value)
     local filePath = CONFIG_DIR .. fileName .. ".json"
     local fileContent = util.TableToJSON(gRust.Config[fileName], true)
     file.Write(filePath, fileContent)
-
-    print("[gRust] SAVED: " .. key .. " = " .. tostring(value) .. " to " .. filePath)
 
     gRust.NetworkedConfig[key] = value
 
@@ -120,7 +117,6 @@ function gRust.CreateConfigValue(key, default, networked)
         local filePath = CONFIG_DIR .. fileName .. ".json"
         local fileData = util.TableToJSON(gRust.Config[fileName], true)
         file.Write(filePath, fileData)
-        print("[gRust] Created config: " .. key .. " = " .. default)
     end
 
     if (networked) then
@@ -156,25 +152,40 @@ hook.Add("PrePlayerNetworkReady", "gRust.SyncConfigOnJoin", function(pl)
     net.Send(pl)
 end)
 
--- Wipe functions for chat commands
 function gRust.WipeAll()
-    if (gRust.Wipe) then
-        gRust.Wipe(true, false) -- Wipe blueprint and entities
+    local players = player.GetHumans()
+    for k, v in ipairs(players) do
+        v:Kick("Server is wiping, please rejoin in a few seconds.")
     end
+
+    hook.Run("gRust.Wipe", false, false)
+    
+    file.Write("gRust/last_wipe.txt", os.time())
+    
+    timer.Simple(2, function()
+        RunConsoleCommand("_restart")
+    end)
 end
 
 function gRust.WipeConfig()
-    gRust.Config = {}
-    gRust.NetworkedConfig = {}
-    local CONFIG_DIR = "grust/config/"
-    
-    -- Delete all config files
-    local files, _ = file.Find(CONFIG_DIR .. "*.json", "DATA")
-    for _, f in ipairs(files) do
-        file.Delete(CONFIG_DIR .. f, "DATA")
+    local players = player.GetHumans()
+    for k, v in ipairs(players) do
+        v:Kick("Server config is being wiped, please rejoin in a few seconds.")
     end
     
-    print("[gRust] Config wiped")
+    gRust.Config = {}
+    gRust.NetworkedConfig = {}
+    
+    local files, _ = file.Find(CONFIG_DIR .. "*.json", "DATA")
+    if (files) then
+        for _, f in ipairs(files) do
+            file.Delete(CONFIG_DIR .. f)
+        end
+    end
+    
+    timer.Simple(2, function()
+        RunConsoleCommand("_restart")
+    end)
 end
 
 gRust.LoadConfig()

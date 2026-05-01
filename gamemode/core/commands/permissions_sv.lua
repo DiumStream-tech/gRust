@@ -2,6 +2,7 @@ gRust.Permissions = gRust.Permissions or {}
 
 util.AddNetworkString("gRust.CheckPermission")
 util.AddNetworkString("gRust.PermissionDenied")
+util.AddNetworkString("gRust.RequestSpawnItem")
 
 local PERMISSION_LEVELS = {
     ["public"] = 0,
@@ -12,16 +13,12 @@ local PERMISSION_LEVELS = {
 }
 
 function gRust.Permissions:GetPlayerLevel(ply)
-    if (not IsValid(ply)) then return PERMISSION_LEVELS["superadmin"] end
+    if (not IsValid(ply)) then return PERMISSION_LEVELS["public"] end
     
-    if (ulx and ply.GetUserGroup and ply.IsUserGroup) then
+    if (ulx and ply.GetUserGroup) then
         local userGroup = ply:GetUserGroup()
-        if (userGroup == "superadmin") then
-            return PERMISSION_LEVELS["superadmin"]
-        elseif (userGroup == "admin") then
-            return PERMISSION_LEVELS["admin"]
-        elseif (userGroup == "moderator") then
-            return PERMISSION_LEVELS["moderator"]
+        if (PERMISSION_LEVELS[userGroup]) then
+            return PERMISSION_LEVELS[userGroup]
         end
     end
     
@@ -35,8 +32,8 @@ function gRust.Permissions:GetPlayerLevel(ply)
 end
 
 function gRust.Permissions:HasPermission(ply, permissionKey)
-    local requiredLevel = gRust.GetConfigValue("permissions/" .. permissionKey, "admin")
-    local requiredLevelNum = PERMISSION_LEVELS[requiredLevel] or PERMISSION_LEVELS["admin"]
+    local configValue = gRust.GetConfigValue("permissions/" .. permissionKey, "admin")
+    local requiredLevelNum = PERMISSION_LEVELS[configValue] or 4
     local playerLevel = self:GetPlayerLevel(ply)
     
     return playerLevel >= requiredLevelNum
@@ -45,7 +42,7 @@ end
 function gRust.Permissions:CheckAndNotify(ply, permissionKey)
     if (not self:HasPermission(ply, permissionKey)) then
         if (IsValid(ply)) then
-            ply:ChatPrint("You do not have permission to use this command.")
+            ply:ChatPrint("Accès Refusé: Vous n'avez pas le grade requis (" .. gRust.GetConfigValue("permissions/" .. permissionKey, "admin") .. ")")
         end
         return false
     end
@@ -58,7 +55,19 @@ net.Receive("gRust.CheckPermission", function(len, ply)
     
     net.Start("gRust.PermissionDenied")
         net.WriteBool(hasPermission)
+        net.WriteString(permissionKey)
     net.Send(ply)
+end)
+
+net.Receive("gRust.RequestSpawnItem", function(len, ply)
+    if (not IsValid(ply)) then return end
+    
+    local itemId = net.ReadString()
+    local amount = net.ReadUInt(16)
+
+    if (gRust.Permissions:CheckAndNotify(ply, "give")) then
+        concommand.Run(ply, "grust_giveitem", {itemId, tostring(amount)})
+    end
 end)
 
 hook.Add("gRust.Loaded", "gRust.InitPermissions", function()
@@ -68,4 +77,5 @@ hook.Add("gRust.Loaded", "gRust.InitPermissions", function()
     gRust.CreateConfigValue("permissions/load", "admin")
     gRust.CreateConfigValue("permissions/multiplier", "admin")
     gRust.CreateConfigValue("permissions/config", "admin")
+    gRust.CreateConfigValue("permissions/devmenu", "admin")
 end)

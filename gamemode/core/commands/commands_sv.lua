@@ -29,6 +29,8 @@ local function HasPermission(pl, key)
 end
 
 concommand.Add("grust_giveitem", function(pl, cmd, args)
+    if (not IsValid(pl)) then return end
+    
     if (not HasPermission(pl, "give")) then
         return
     end
@@ -37,14 +39,17 @@ concommand.Add("grust_giveitem", function(pl, cmd, args)
     local amount = tonumber(args[2]) or 1
     
     if (not itemID) then
-        if (IsValid(pl)) then
-            pl:ChatPrint("Usage: grust_giveitem <item_id> [amount]")
-        end
+        pl:ChatPrint("Usage: grust_giveitem <item_id> [amount]")
         return
     end
     
-    pl:AddItem(gRust.CreateItem(itemID, amount), ITEM_PICKUP)
-    gRust.Log(string.format("%s gave themselves %s x%d", pl:Name(), itemID, amount))
+    local item = gRust.CreateItem(itemID, amount)
+    if (item) then
+        pl:AddItem(item, ITEM_PICKUP)
+        gRust.Log(string.format("%s gave themselves %s x%d", pl:Name(), itemID, amount))
+    else
+        pl:ChatPrint("Invalid Item ID: " .. itemID)
+    end
 end, ItemAutoComplete, "Give yourself an item")
 
 concommand.Add("grust_multiplier", function(pl, cmd, args)
@@ -130,10 +135,19 @@ concommand.Add("grust_wipe", function(pl, cmd, args)
         return
     end
     
-    local bpWipe = args[1] == "1"
-    local scheduled = args[2] == "1"
-
-    gRust.Wipe(bpWipe, scheduled)
+    local wipeType = string.lower(args[1] or "all")
+    
+    if (wipeType == "all") then
+        gRust.WipeAll()
+    elseif (wipeType == "config") then
+        gRust.WipeConfig()
+    else
+        if (IsValid(pl)) then
+            pl:ChatPrint("Usage: grust_wipe [all|config]")
+        else
+            print("[gRust] Usage: grust_wipe [all|config]")
+        end
+    end
 end)
 
 concommand.Add("grust_save", function(pl, cmd, args)
