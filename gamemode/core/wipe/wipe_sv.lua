@@ -18,12 +18,3 @@ end
 function gRust.GetLastWipe()
     return file.Read("gRust/last_wipe.txt", "DATA") or 0
 end
-
-concommand.Add("grust_wipe", function(pl, cmd, args)
-    if (IsValid(pl) and !pl:IsSuperAdmin()) then return end
-    
-    local bpWipe = args[1] == "1"
-    local scheduled = args[2] == "1"
-
-    gRust.Wipe(bpWipe, scheduled)
-end)

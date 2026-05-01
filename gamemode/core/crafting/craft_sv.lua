@@ -48,7 +48,8 @@ function PLAYER:PopCraftingQueue()
     local register = gRust.GetItemRegister(item.Item)
     if (!register) then return end
 
-    self:AddItem(gRust.CreateItem(item.Item, register:GetCraftAmount()), ITEM_CRAFT)
+    local craftAmount = register:GetCraftAmount() * gRust.GetConfigValue("building/resources.multiplier", 1)
+    self:AddItem(gRust.CreateItem(item.Item, craftAmount), ITEM_CRAFT)
 
     item.Amount = item.Amount - 1
     item.End = CurTime() + (register:GetCraftTime() / CRAFTING_SPEED)

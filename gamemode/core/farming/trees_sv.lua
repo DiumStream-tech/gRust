@@ -122,6 +122,10 @@ hook.Add("EntityTakeDamage", "gRust.TreeGather", function(ent, dmg)
         end
 
         HarvestAmount = HarvestAmount * gRust.GetConfigValue("farming/harvest.tree", 1)
+        HarvestAmount = HarvestAmount * gRust.GetConfigValue("farming/gather.multiplier", 1)
+
+        local mult = gRust.GetConfigValue("farming/gather.multiplier", 1)
+        print("[gRust DEBUG] TreeHarvest: weapon=" .. weapon.TreeGather .. " | harvest.tree=" .. gRust.GetConfigValue("farming/harvest.tree", 1) .. " | gather.multiplier=" .. mult .. " | Final=" .. HarvestAmount)
 
         local item = gRust.CreateItem("wood")
         item:SetQuantity(HarvestAmount)

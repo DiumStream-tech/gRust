@@ -3,7 +3,7 @@ AddCSLuaFile("cl_init.lua")
 include("shared.lua")
 
 gRust.CreateConfigValue("farming/harvest.hemp", 1)
-local HEMP_HARVEST = gRust.GetConfigValue("farming/harvest.hemp")
+gRust.CreateConfigValue("farming/gather.multiplier", 1)
 
 function ENT:Initialize()
     self:SetModel("models/environment/plants/hemp.mdl")
@@ -24,7 +24,8 @@ function ENT:Initialize()
 end
 
 function ENT:Interact(pl)
-    local Item = gRust.CreateItem("cloth", math.floor(self.Stage * 3.5) * HEMP_HARVEST)
+    local hempHarvest = gRust.GetConfigValue("farming/harvest.hemp", 1) * gRust.GetConfigValue("farming/gather.multiplier", 1)
+    local Item = gRust.CreateItem("cloth", math.floor(self.Stage * 3.5) * hempHarvest)
     pl:AddItem(Item, ITEM_HARVEST)
 
     pl:EmitSound("farming.pick")

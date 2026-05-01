@@ -1,56 +1,126 @@
 local CONFIG_DIR = "grust/config/"
 
-file.CreateDir(CONFIG_DIR)
+if (not file.Exists(CONFIG_DIR, "DATA")) then
+    file.CreateDir(CONFIG_DIR)
+end
 
 gRust.Config = gRust.Config or {}
 gRust.NetworkedConfig = gRust.NetworkedConfig or {}
+gRust.ConfigLoaded = false
+
+util.AddNetworkString("gRust.SyncConfig")
+
+local function SyncToAll()
+    local str = util.TableToJSON(gRust.NetworkedConfig)
+    local compressed = util.Compress(str)
+    local len = #compressed
+
+    net.Start("gRust.SyncConfig")
+        net.WriteUInt(len, 32)
+        net.WriteData(compressed, len)
+    net.Broadcast()
+end
 
 function gRust.GetConfigValue(key, default)
-    if (!gRust.ConfigLoaded) then
-        gRust.LoadConfig()
-    end
+    local parts = string.Split(key, "/")
+    local fileName = parts[1]
+    local keyName = parts[2]
 
-    local f = string.Split(key, "/")
-    local fileName = f[1]
-    local keyName = f[2]
-
-    local value = gRust.Config[fileName] and gRust.Config[fileName][keyName]
-    if (value == nil) then
+    if (not fileName or not keyName) then
         return default
     end
 
-    return value
+    if (not gRust.Config[fileName]) then
+        gRust.Config[fileName] = {}
+    end
+
+    local value = gRust.Config[fileName][keyName]
+
+    if (value ~= nil) then
+        return value
+    end
+
+    local filePath = CONFIG_DIR .. fileName .. ".json"
+    if (file.Exists(filePath, "DATA")) then
+        local fileData = file.Read(filePath, "DATA")
+        if (fileData and fileData ~= "") then
+            local decoded = util.JSONToTable(fileData)
+            if (decoded) then
+                gRust.Config[fileName] = decoded
+                if (gRust.Config[fileName][keyName] ~= nil) then
+                    return gRust.Config[fileName][keyName]
+                end
+            end
+        end
+    end
+
+    return default
 end
 
 function gRust.SetConfigValue(key, value)
-    if (!gRust.ConfigLoaded) then
-        gRust.LoadConfig()
+    local parts = string.Split(key, "/")
+    local fileName = parts[1]
+    local keyName = parts[2]
+
+    if (not fileName or not keyName) then
+        print("[gRust ERROR] Invalid config key: " .. key)
+        return
     end
 
-    local f = string.Split(key, "/")
-    local fileName = f[1]
-    local keyName = f[2]
+    if (not gRust.Config[fileName]) then
+        gRust.Config[fileName] = {}
+    end
 
-    gRust.Config[fileName] = gRust.Config[fileName] or {}
     gRust.Config[fileName][keyName] = value
-    gRust.SaveConfig()
+
+    local filePath = CONFIG_DIR .. fileName .. ".json"
+    local fileContent = util.TableToJSON(gRust.Config[fileName], true)
+    file.Write(filePath, fileContent)
+
+    print("[gRust] SAVED: " .. key .. " = " .. tostring(value) .. " to " .. filePath)
+
+    gRust.NetworkedConfig[key] = value
+
+    local jsonStr = util.TableToJSON(gRust.NetworkedConfig)
+    local compressed = util.Compress(jsonStr)
     
-    hook.Run("gRust.ConfigUpdated")
+    net.Start("gRust.SyncConfig")
+        net.WriteUInt(#compressed, 32)
+        net.WriteData(compressed, #compressed)
+    net.Broadcast()
+
+    hook.Run("gRust.ConfigUpdated", key, value)
 end
 
 function gRust.CreateConfigValue(key, default, networked)
-    if (!gRust.ConfigLoaded) then
-        gRust.LoadConfig()
-    end
-
     local f = string.Split(key, "/")
     local fileName = f[1]
     local keyName = f[2]
 
-    gRust.Config[fileName] = gRust.Config[fileName] or {}
-    if (!gRust.Config[fileName][keyName]) then
+    if (not fileName or not keyName) then
+        return
+    end
+
+    if (not gRust.Config[fileName]) then
+        local path = CONFIG_DIR .. fileName .. ".json"
+        if (file.Exists(path, "DATA")) then
+            local fileData = file.Read(path, "DATA")
+            if (fileData and fileData ~= "") then
+                gRust.Config[fileName] = util.JSONToTable(fileData) or {}
+            else
+                gRust.Config[fileName] = {}
+            end
+        else
+            gRust.Config[fileName] = {}
+        end
+    end
+    
+    if (gRust.Config[fileName][keyName] == nil) then
         gRust.Config[fileName][keyName] = default
-        gRust.SaveConfig()
+        local filePath = CONFIG_DIR .. fileName .. ".json"
+        local fileData = util.TableToJSON(gRust.Config[fileName], true)
+        file.Write(filePath, fileData)
+        print("[gRust] Created config: " .. key .. " = " .. default)
     end
 
     if (networked) then
@@ -58,57 +128,53 @@ function gRust.CreateConfigValue(key, default, networked)
     end
 end
 
-function gRust.SaveConfig()
-    if (!gRust.ConfigLoaded) then
-        gRust.LoadConfig()
-    end
-
-    for k, v in pairs(gRust.Config) do
-        local fileName = k
-        local fileData = util.TableToJSON(v, true)
-        file.Write(CONFIG_DIR .. fileName .. ".json", fileData)
-    end
-end
-
 function gRust.LoadConfig()
-    gRust.Config = {}
-
-    local files, dirs = file.Find(CONFIG_DIR .. "*", "DATA")
-    for k, v in pairs(files) do
+    local files, _ = file.Find(CONFIG_DIR .. "*.json", "DATA")
+    
+    for _, v in ipairs(files) do
         local fileName = string.Replace(v, ".json", "")
         local fileData = file.Read(CONFIG_DIR .. v, "DATA")
-        gRust.Config[fileName] = util.JSONToTable(fileData)
+        if (fileData) then
+            local decoded = util.JSONToTable(fileData)
+            if (decoded) then
+                gRust.Config[fileName] = decoded
+            end
+        end
     end
 
     gRust.ConfigLoaded = true
-    
-    hook.Run("gRust.ConfigUpdated")
 end
 
-util.AddNetworkString("gRust.SyncConfig")
-hook.Add("PrePlayerNetworkReady", "gRust.NetworkedConfig", function(pl)
+hook.Add("PrePlayerNetworkReady", "gRust.SyncConfigOnJoin", function(pl)
     local str = util.TableToJSON(gRust.NetworkedConfig)
-    str = util.Compress(str)
+    local compressed = util.Compress(str)
+    local len = #compressed
 
     net.Start("gRust.SyncConfig")
-        net.WriteUInt(#str, 32)
-        net.WriteData(str, #str)
+        net.WriteUInt(len, 32)
+        net.WriteData(compressed, len)
     net.Send(pl)
 end)
 
-hook.Add("gRust.Loaded", "gRust.InitializeConfig", function()
-    if (!gRust.ConfigLoaded) then
-        gRust.LoadConfig()
+-- Wipe functions for chat commands
+function gRust.WipeAll()
+    if (gRust.Wipe) then
+        gRust.Wipe(true, false) -- Wipe blueprint and entities
     end
+end
 
-    gRust.LogSuccess("Config initialized")
+function gRust.WipeConfig()
+    gRust.Config = {}
+    gRust.NetworkedConfig = {}
+    local CONFIG_DIR = "grust/config/"
+    
+    -- Delete all config files
+    local files, _ = file.Find(CONFIG_DIR .. "*.json", "DATA")
+    for _, f in ipairs(files) do
+        file.Delete(CONFIG_DIR .. f, "DATA")
+    end
+    
+    print("[gRust] Config wiped")
+end
 
-    hook.Run("gRust.ConfigInitialized")
-end)
-
-concommand.Add("grust_reloadconfig", function(pl)
-    if (IsValid(pl)) then return end
-
-    gRust.LoadConfig()
-    gRust.LogSuccess("Reloaded config")
-end)
+gRust.LoadConfig()

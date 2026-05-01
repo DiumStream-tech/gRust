@@ -4,6 +4,7 @@ include("shared.lua")
 
 gRust.CreateConfigValue("farming/recycle.efficiency", 0.5)
 gRust.CreateConfigValue("farming/recycle.interval", 5)
+gRust.CreateConfigValue("recycler/efficiency.multiplier", 1)
 
 ENT.Model = "models/environment/misc/recycler.mdl"
 
@@ -38,7 +39,7 @@ function ENT:HasRecyclableItems()
 end
 
 function ENT:RecyclerThink()
-    local efficiency = gRust.GetConfigValue("farming/recycle.efficiency")
+    local efficiency = gRust.GetConfigValue("farming/recycle.efficiency") * gRust.GetConfigValue("recycler/efficiency.multiplier", 1)
     local inputInventory = self.Containers[1]
     local outputInventory = self.Containers[2]
     for i = 1, 6 do

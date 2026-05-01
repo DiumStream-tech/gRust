@@ -111,20 +111,3 @@ end)
 hook.Add("gRust.Wipe", "gRust.ClearAutoSave", function()
     gRust.ClearSave("autosave.dat")
 end)
-
-concommand.Add("grust_save", function(pl, cmd, args)
-    if (IsValid(pl) and !pl:IsSuperAdmin()) then return end
-    gRust.Save(args[1] or "manualsave.dat")
-end)
-
-concommand.Add("grust_load", function(pl, cmd, args)
-    if (IsValid(pl) and !pl:IsSuperAdmin()) then return end
-
-    for _, ent in ents.Iterator() do
-        if (ent.ShouldSave and !ent:CreatedByMap()) then
-            ent:Remove()
-        end
-    end
-
-    gRust.Load(args[1] or "manualsave.dat")
-end)

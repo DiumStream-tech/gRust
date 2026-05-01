@@ -5,7 +5,21 @@ local OpenedTab = "Items"
 local CATEGORY_FONT = "gRust.22px"
 local CATEGORY_MARGIN = 5
 
+local hasPermission = false
+
+local function CheckPermission()
+    net.Start("gRust.CheckPermission")
+        net.WriteString("give")
+    net.SendToServer()
+end
+
+net.Receive("gRust.PermissionDenied", function()
+    hasPermission = net.ReadBool()
+end)
+
 function PANEL:Init()
+    timer.Simple(0.1, function() CheckPermission() end)
+    
     local CategoryContainer = self:Add("Panel")
     CategoryContainer:Dock(TOP)
     CategoryContainer:SetTall(40)
@@ -32,8 +46,10 @@ function PANEL:Init()
 
     CategoryContainer.PerformLayout = function(pnl, w, h)
         local x = CATEGORY_MARGIN
-        for k, v in ipairs(pnl:GetChildren()) do
-            v:SetWide(w / #pnl:GetChildren() - CATEGORY_MARGIN)
+        local children = pnl:GetChildren()
+        local count = #children
+        for k, v in ipairs(children) do
+            v:SetWide(w / count - CATEGORY_MARGIN)
             v:SetTall(h)
             v:SetPos(x, 0)
             x = x + v:GetWide() + CATEGORY_MARGIN
@@ -67,7 +83,6 @@ function PANEL:Init()
         if (IsValid(FirstItem)) then
             FirstItem:DoClick()
         end
-
         me:RequestFocus()
     end
     Search:RequestFocus()
@@ -76,12 +91,11 @@ function PANEL:Init()
 end
 
 function PANEL:Paint(w, h)
-
 end
-    
+
 local function SpawnItem(id, amount)
-    if (GetConVar("sv_cheats"):GetBool() == false) then
-        LocalPlayer():ChatPrint("You must enable sv_cheats to spawn items")
+    if (not hasPermission) then
+        LocalPlayer():ChatPrint("You do not have permission to spawn items")
         return
     end
     
@@ -90,8 +104,10 @@ end
 
 local ITEM_PADDING = 8
 local BLUEPRINT_ICON = Material("items/misc/blueprint.png", "smooth")
-local TEXT_COLOR = Color(131, 131, 131, 500)
+local TEXT_COLOR = Color(131, 131, 131)
+
 function PANEL:FillItems(condition)
+    if (!IsValid(self.Container)) then return end
     self.Container:Clear()
 
     for k, v in ipairs(gRust.GetItems()) do
@@ -124,7 +140,7 @@ function PANEL:FillItems(condition)
         Hundred:SetFont("gRust.16px")
         local OldOnCursorEntered = Hundred.OnCursorEntered
         Hundred.OnCursorEntered = function(me)
-            OldOnCursorEntered(me)
+            if (OldOnCursorEntered) then OldOnCursorEntered(me) end
             Item:OnCursorEntered()
         end
         Hundred.DoClick = function(me)
@@ -134,9 +150,9 @@ function PANEL:FillItems(condition)
         local Thousand = Item:Add("gRust.Button")
         Thousand:SetText("1k")
         Thousand:SetFont("gRust.16px")
-        local OldOnCursorEntered = Thousand.OnCursorEntered
+        local OldOnCursorEntered2 = Thousand.OnCursorEntered
         Thousand.OnCursorEntered = function(me)
-            OldOnCursorEntered(me)
+            if (OldOnCursorEntered2) then OldOnCursorEntered2(me) end
             Item:OnCursorEntered()
         end
         Thousand.DoClick = function(me)
@@ -144,7 +160,6 @@ function PANEL:FillItems(condition)
         end
 
         Item.PerformLayout = function(me, w, h)
-            -- Align to top right and go down
             Hundred:SetWide(40)
             Hundred:SetTall(20)
             Hundred:SetPos(w / 2 + ITEM_PADDING, ITEM_PADDING)
@@ -154,17 +169,17 @@ function PANEL:FillItems(condition)
             Thousand:SetPos(w / 2 + ITEM_PADDING, ITEM_PADDING + Hundred:GetTall() + ITEM_PADDING)
         end
 
-        local OldPaint = Hundred.Paint
+        local OldPaint1 = Hundred.Paint
         Hundred.Paint = function(me, w, h)
             if (Item:IsHovered() or me:IsHovered() or Thousand:IsHovered()) then
-                OldPaint(me, w, h)
+                OldPaint1(me, w, h)
             end
         end
 
-        local OldPaint = Thousand.Paint
+        local OldPaint2 = Thousand.Paint
         Thousand.Paint = function(me, w, h)
             if (Item:IsHovered() or me:IsHovered() or Hundred:IsHovered()) then
-                OldPaint(me, w, h)
+                OldPaint2(me, w, h)
             end
         end
     end
@@ -180,12 +195,18 @@ end
 
 local ITEM_SIZE = 128
 function PANEL:PerformLayout(w, h)
-    for k, v in ipairs(self.Container:GetChildren()) do
+    if (!IsValid(self.Container)) then return end
+    
+    local children = self.Container:GetChildren()
+    local cols = math.floor(w / ITEM_SIZE)
+    if (cols < 1) then cols = 1 end
+
+    for k, v in ipairs(children) do
         v:SetWide(ITEM_SIZE)
         v:SetTall(ITEM_SIZE)
 
-        local x = (k - 1) % math.floor(w / ITEM_SIZE) * ITEM_SIZE
-        local y = math.floor((k - 1) / math.floor(w / ITEM_SIZE)) * ITEM_SIZE
+        local x = (k - 1) % cols * ITEM_SIZE
+        local y = math.floor((k - 1) / cols) * ITEM_SIZE
         v:SetPos(x, y)
     end
 end

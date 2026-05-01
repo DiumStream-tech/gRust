@@ -18,7 +18,7 @@ function PANEL:SetTooltip(text)
     self.TooltipMatrix = Matrix()
     self.PaintOver = function(me, w, h)
         draw.Overlay(function()
-            if (vgui.GetHoveredPanel() == me) then
+            if (vgui.GetHoveredPanel() == me and me.Tooltip and type(me.Tooltip) == "string" and string.len(me.Tooltip) > 0) then
                 if (!me.TooltipHoverTime) then
                     me.TooltipHoverTime = CurTime() + 0.15
                 end
@@ -31,7 +31,7 @@ function PANEL:SetTooltip(text)
                 local clip = DisableClipping(true)
 
                 surface.SetFont(TooltipFont)
-                local tw, th = surface.GetTextSize(text)
+                local tw, th = surface.GetTextSize(me.Tooltip)
                 local x = (w * 0.5) - (tw * 0.5 + TooltipPaddingX)
                 local y
 
@@ -65,7 +65,7 @@ function PANEL:SetTooltip(text)
 
                 gRust.DrawPanelColored(x, y, bw, bh, TooltipColor)
 
-                local lines = string.Explode("\n", text)
+                local lines = string.Explode("\n", me.Tooltip)
 
                 for i = 1, #lines do
                     -- surface.SetTextColor(TextColor)

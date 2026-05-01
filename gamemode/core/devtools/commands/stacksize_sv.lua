@@ -1,0 +1,1 @@
+-- Stack size configuration removed - using default item stack sizes

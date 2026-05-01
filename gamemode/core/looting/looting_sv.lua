@@ -101,9 +101,10 @@ end)
 -- Looting functions
 --
 
-function gRust.SelectLootFromTable(lootTable, amount)
+function gRust.SelectLootFromTable(lootTable, amount, skipMultiplier)
     local selectedLoot = {}
     local selectedLootIndex = {}
+    local lootMultiplier = (not skipMultiplier) and gRust.GetConfigValue("loot/multiplier", 1) or 1
     
     local i = 0
     while (#selectedLoot < amount) do
@@ -120,6 +121,8 @@ function gRust.SelectLootFromTable(lootTable, amount)
                 if (istable(quantity)) then
                     quantity = math.random(quantity[1], quantity[2])
                 end
+                quantity = math.floor(quantity * lootMultiplier)
+                if (quantity <= 0) then quantity = 1 end
     
                 table.insert(selectedLoot, gRust.CreateItem(v.itemid, quantity))
                 selectedLootIndex[v.itemid] = true
