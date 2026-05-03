@@ -5,6 +5,26 @@ local OpenedTab = "Items"
 local CATEGORY_FONT = "gRust.22px"
 local CATEGORY_MARGIN = 5
 
+local CanGiveItems = false
+local CheckedGivePermission = false
+
+local function SpawnItem(id, amount)
+    if (!CheckedGivePermission) then
+        LocalPlayer():ChatPrint("Vérification des permissions en cours, réessayez dans un instant.")
+        return
+    end
+
+    if (!CanGiveItems) then
+        LocalPlayer():ChatPrint("Permission refusée : vous ne pouvez pas donner d'objets.")
+        return
+    end
+
+    net.Start("gRust.RequestSpawnItem")
+        net.WriteString(id)
+        net.WriteUInt(amount, 16)
+    net.SendToServer()
+end
+
 function PANEL:Init()
     local CategoryContainer = self:Add("Panel")
     CategoryContainer:Dock(TOP)
@@ -12,6 +32,15 @@ function PANEL:Init()
 
     self.Container = self:Add("Panel")
     self.Container:Dock(FILL)
+
+    gRust.PermissionsClient:CheckPermission("give", function(hasPermission)
+        CanGiveItems = hasPermission
+        CheckedGivePermission = true
+        if (IsValid(self)) then
+            self:InvalidateLayout()
+            self:FillCategory(OpenedTab)
+        end
+    end)
 
     for k, v in ipairs(gRust.GetCategories()) do
         local Category = CategoryContainer:Add("gRust.Button")
@@ -93,6 +122,15 @@ local TEXT_COLOR = Color(131, 131, 131)
 function PANEL:FillItems(condition)
     if (!IsValid(self.Container)) then return end
     self.Container:Clear()
+
+    if (CheckedGivePermission and not CanGiveItems) then
+        local DeniedLabel = self.Container:Add("gRust.Label")
+        DeniedLabel:Dock(FILL)
+        DeniedLabel:SetText("Permission refusée : Vous n'êtes pas autorisé à donner des objets.")
+        DeniedLabel:SetContentAlignment(5)
+        DeniedLabel:SetTextColor(Color(255, 100, 100))
+        return
+    end
 
     for k, v in ipairs(gRust.GetItems()) do
         local register = gRust.GetItemRegister(v)

@@ -1,5 +1,7 @@
-gRust.CreateConfigValue("environment/tree.respawn", 180)
-gRust.CreateConfigValue("farming/harvest.tree", 1)
+hook.Add("gRust.Loaded", "gRust.InitTreesConfig", function()
+	gRust.CreateConfigValue("environment/tree.respawn", 180, true)
+	gRust.CreateConfigValue("farming/harvest.tree", 1, true)
+end)
 
 local function ResetWeakSpot(ent)
     if (IsValid(ent)) then
@@ -121,11 +123,9 @@ hook.Add("EntityTakeDamage", "gRust.TreeGather", function(ent, dmg)
             end
         end
 
-        HarvestAmount = HarvestAmount * gRust.GetConfigValue("farming/harvest.tree", 1)
-        HarvestAmount = HarvestAmount * gRust.GetConfigValue("farming/gather.multiplier", 1)
-
-        local mult = gRust.GetConfigValue("farming/gather.multiplier", 1)
-        print("[gRust DEBUG] TreeHarvest: weapon=" .. weapon.TreeGather .. " | harvest.tree=" .. gRust.GetConfigValue("farming/harvest.tree", 1) .. " | gather.multiplier=" .. mult .. " | Final=" .. HarvestAmount)
+        local treeMultiplier = gRust.GetConfigValue("farming/harvest.tree", 1)
+        local gatherMultiplier = gRust.GetConfigValue("farming/gather.multiplier", 1)
+        HarvestAmount = math.floor(HarvestAmount * treeMultiplier * gatherMultiplier)
 
         local item = gRust.CreateItem("wood")
         item:SetQuantity(HarvestAmount)

@@ -630,9 +630,13 @@ function ENT:Initialize()
     self:CreateContainers()
 end
 
-function ENT:Interact()
+function ENT:Interact(pl)
+    if (CLIENT) then return end
+    
     if (!self.Hacking and !self.Hacked) then
         self:StartHacking()
+    elseif (self.Hacked) then
+        BaseClass.Interact(self, pl)
     end
 end
 

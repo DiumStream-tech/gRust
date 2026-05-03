@@ -3,7 +3,6 @@ AddCSLuaFile("cl_init.lua")
 include("shared.lua")
 
 gRust.CreateConfigValue("farming/harvest.ore", 1)
-gRust.CreateConfigValue("farming/gather.multiplier", 1)
 
 local OreTypes = {
     {
@@ -150,11 +149,9 @@ function ENT:OnTakeDamage(dmg)
 
     self:SetHealth(self:Health() - damage)
 
-    HarvestAmount = HarvestAmount * gRust.GetConfigValue("farming/harvest.ore", 1)
-    HarvestAmount = HarvestAmount * gRust.GetConfigValue("farming/gather.multiplier", 1)
-
-    local mult = gRust.GetConfigValue("farming/gather.multiplier", 1)
-    print("[gRust DEBUG] OreHarvest: weapon=" .. weapon.OreGather .. " | harvest.ore=" .. gRust.GetConfigValue("farming/harvest.ore", 1) .. " | gather.multiplier=" .. mult .. " | Final=" .. HarvestAmount)
+    local oreMultiplier = gRust.GetConfigValue("farming/harvest.ore", 1)
+    local gatherMultiplier = gRust.GetConfigValue("farming/gather.multiplier", 1)
+    HarvestAmount = math.floor(HarvestAmount * oreMultiplier * gatherMultiplier)
 
     local oreType = OreTypes[self:GetOreType()]
     local item = gRust.CreateItem(oreType.Item, HarvestAmount)

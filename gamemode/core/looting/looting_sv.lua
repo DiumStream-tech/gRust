@@ -1,3 +1,5 @@
+gRust.CreateConfigValue("loot/multiplier", 1, true)
+
 util.AddNetworkString("gRust.StartLooting")
 util.AddNetworkString("gRust.StopLooting")
 util.AddNetworkString("gRust.StartedLooting")
@@ -105,6 +107,8 @@ function gRust.SelectLootFromTable(lootTable, amount, skipMultiplier)
     local selectedLoot = {}
     local selectedLootIndex = {}
     local lootMultiplier = (not skipMultiplier) and gRust.GetConfigValue("loot/multiplier", 1) or 1
+    amount = math.max(1, math.ceil(amount * lootMultiplier))
+    amount = math.min(amount, #lootTable)
     
     local i = 0
     while (#selectedLoot < amount) do
@@ -121,13 +125,12 @@ function gRust.SelectLootFromTable(lootTable, amount, skipMultiplier)
                 if (istable(quantity)) then
                     quantity = math.random(quantity[1], quantity[2])
                 end
-                quantity = math.floor(quantity * lootMultiplier)
-                if (quantity <= 0) then quantity = 1 end
-    
+                quantity = math.max(1, math.ceil(quantity * lootMultiplier))
+
                 table.insert(selectedLoot, gRust.CreateItem(v.itemid, quantity))
                 selectedLootIndex[v.itemid] = true
             end
-    
+
             if (#selectedLoot == #lootTable) then
                 break
             end

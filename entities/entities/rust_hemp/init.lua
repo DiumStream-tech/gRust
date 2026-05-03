@@ -3,7 +3,6 @@ AddCSLuaFile("cl_init.lua")
 include("shared.lua")
 
 gRust.CreateConfigValue("farming/harvest.hemp", 1)
-gRust.CreateConfigValue("farming/gather.multiplier", 1)
 
 function ENT:Initialize()
     self:SetModel("models/environment/plants/hemp.mdl")

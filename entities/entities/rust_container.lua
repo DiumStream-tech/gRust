@@ -79,7 +79,14 @@ end
 function ENT:Interact(pl)
     if (CLIENT) then return end
     
+    if (!self:IsLootable()) then
+        return
+    end
+    
     if (!self:IsAuthorizedToLock(pl) and self:IsLocked() and self.LockData and self.LockData.Item == "code_lock") then
+        net.Start("gRust.RequestLockCode")
+            net.WriteEntity(self)
+        net.Send(pl)
         self:EmitSound("codelock.beep")
         return
     end

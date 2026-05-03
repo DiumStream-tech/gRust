@@ -1,11 +1,6 @@
-gRust.CreateConfigValue("farming/gather.multiplier", 1, true)
-gRust.CreateConfigValue("building/resources.multiplier", 1, true)
-gRust.CreateConfigValue("recycler/efficiency.multiplier", 1, true)
-gRust.CreateConfigValue("loot/multiplier", 1, true)
-
-hook.Add("gRust.ConfigUpdated", "gRust.MultiplierNotify", function()
-	local devConvar = GetConVar("developer")
-	if (devConvar and devConvar:GetInt() > 0) then
-		print("[gRust] Multiplier config updated")
-	end
+hook.Add("gRust.Loaded", "gRust.InitMultipliers", function()
+	gRust.CreateConfigValue("farming/gather.multiplier", 1, true)
+	gRust.CreateConfigValue("building/resources.multiplier", 1, true)
+	gRust.CreateConfigValue("recycler/efficiency.multiplier", 1, true)
+	gRust.CreateConfigValue("loot/multiplier", 1, true)
 end)

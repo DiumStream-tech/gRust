@@ -23,7 +23,13 @@ hook.Add("KeyRelease", "gRust.InteractSystem", function(pl, key)
         if (!IsValid(ent)) then return end
         
         if (ent.Interact and ent:GetInteractable() and IsFirstTimePredicted()) then
-            ent:Interact(pl)
+            if (ent:IsPlayer()) then
+                net.Start("gRust.Interact")
+                    net.WriteEntity(ent)
+                net.SendToServer()
+            else
+                ent:Interact(pl)
+            end
         end
     end
 end)

@@ -79,24 +79,18 @@ RegisterChatCommand("multiplier", function(ply, cmd, args)
         gRust.SetConfigValue("building/resources.multiplier", value)
         gRust.SetConfigValue("recycler/efficiency.multiplier", value)
         gRust.SetConfigValue("loot/multiplier", value)
-        print("[gRust DEBUG CHAT] Set all multipliers to " .. value)
-        print("[gRust DEBUG CHAT] Verify - gather=" .. gRust.GetConfigValue("farming/gather.multiplier", 1))
         ply:ChatPrint("All multipliers set to " .. value)
     elseif (multiplierType == "gather") then
         gRust.SetConfigValue("farming/gather.multiplier", value)
-        print("[gRust DEBUG CHAT] Set gather multiplier to " .. value)
         ply:ChatPrint("Gather multiplier set to " .. value)
     elseif (multiplierType == "resources") then
         gRust.SetConfigValue("building/resources.multiplier", value)
-        print("[gRust DEBUG CHAT] Set resources multiplier to " .. value)
         ply:ChatPrint("Resources multiplier set to " .. value)
     elseif (multiplierType == "recycler") then
         gRust.SetConfigValue("recycler/efficiency.multiplier", value)
-        print("[gRust DEBUG CHAT] Set recycler multiplier to " .. value)
         ply:ChatPrint("Recycler multiplier set to " .. value)
     elseif (multiplierType == "loot") then
         gRust.SetConfigValue("loot/multiplier", value)
-        print("[gRust DEBUG CHAT] Set loot multiplier to " .. value)
         ply:ChatPrint("Loot multiplier set to " .. value)
     else
         ply:ChatPrint("Unknown multiplier type: " .. multiplierType)

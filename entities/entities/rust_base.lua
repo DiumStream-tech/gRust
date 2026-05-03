@@ -507,6 +507,7 @@ function ENT:Load(f)
 end
 
 if (SERVER) then
+    util.AddNetworkString("gRust.RequestLockCode")
     util.AddNetworkString("gRust.ToggleLock")
     net.Receive("gRust.ToggleLock", function(len, pl)
         if (!IsValid(pl)) then return end
@@ -583,6 +584,7 @@ if (SERVER) then
     
         if (ent.LockData.Code == code) then
             ent:AuthorizeToLock(pl)
+            ent:Unlock()
             pl:EmitSound("codelock.authorize")
         else
             local dmg = DamageInfo()
@@ -603,4 +605,18 @@ if (SERVER) then
             util.Effect("Sparks", effectdata)
         end
     end)
+
+    if (CLIENT) then
+        net.Receive("gRust.RequestLockCode", function()
+            local ent = net.ReadEntity()
+            if (!IsValid(ent)) then return end
+
+            gRust.InputQuery.Keypad("ENTER CODE", function(code)
+                net.Start("gRust.EnterLockCode")
+                    net.WriteEntity(ent)
+                    net.WriteUInt(tonumber(code), 14)
+                net.SendToServer()
+            end)
+        end)
+    end
 end

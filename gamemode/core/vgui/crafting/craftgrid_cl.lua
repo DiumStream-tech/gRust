@@ -120,7 +120,8 @@ function PANEL:Rebuild()
             end
 
             local amountMargin = 24 * gRust.Hud.Scaling
-            local amount = gRust.GetCraftingAmount(id)
+            -- [FIX] Guard nil si craft_cl.lua n'est pas encore chargé
+            local amount = gRust.GetCraftingAmount and gRust.GetCraftingAmount(id) or 0
             if (amount != 0) then
                 local width, height = surface.GetTextSize(amount)
                 width = width + 12 * gRust.Hud.Scaling

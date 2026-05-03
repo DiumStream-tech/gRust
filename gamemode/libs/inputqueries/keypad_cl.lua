@@ -112,7 +112,9 @@ function gRust.InputQuery.Keypad(title, callback)
     Reset:SetTextColor(TEXT_COLOR)
     Reset.DoClick = function(me)
         CurrentInput = ""
+        gRust.PlaySound("codelock.beep")
     end
+
     
     container.PerformLayout = function(me, w, h)
         local totalWidth, totalHeight = 0, 0

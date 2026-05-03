@@ -2,9 +2,10 @@ AddCSLuaFile("shared.lua")
 AddCSLuaFile("cl_init.lua")
 include("shared.lua")
 
-gRust.CreateConfigValue("farming/recycle.efficiency", 0.5)
-gRust.CreateConfigValue("farming/recycle.interval", 5)
-gRust.CreateConfigValue("recycler/efficiency.multiplier", 1)
+hook.Add("gRust.Loaded", "gRust.InitRecyclerConfig", function()
+	gRust.CreateConfigValue("farming/recycle.efficiency", 0.5, true)
+	gRust.CreateConfigValue("farming/recycle.interval", 5, true)
+end)
 
 ENT.Model = "models/environment/misc/recycler.mdl"
 

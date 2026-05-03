@@ -1,4 +1,6 @@
-gRust.CreateConfigValue("farming/quickswap.time", 0.2, true)
+hook.Add("gRust.Loaded", "gRust.InitQuickSwapConfig", function()
+	gRust.CreateConfigValue("farming/quickswap.time", 0.2, true)
+end)
 
 -- If we can stack or wear the item, force quick swap to use that inventory
 local function ShouldForceInventory(inventory, pl, fromItem, toItem)
